@@ -52,18 +52,28 @@ class MainActivity : ComponentActivity() {
                 Text("Saved data:")
                 Text(text = savedText.value)
 
-                val dataToSave = remember { mutableStateOf("") }
+                val dataToSave1 = remember { mutableStateOf("") }
                 TextField(
-                    value = dataToSave.value,
-                    onValueChange = { dataToSave.value = it},
-                    label = { Text(text = "Data to save")}
+                    value = dataToSave1.value,
+                    onValueChange = { dataToSave1.value = it},
+                    label = { Text(text = "Id token to save")}
+                )
+                val dataToSave2 = remember { mutableStateOf("") }
+                TextField(
+                    value = dataToSave2.value,
+                    onValueChange = { dataToSave2.value = it},
+                    label = { Text(text = "Cookie to save")}
                 )
 
                 Button(onClick = {
                     GlobalScope.launch(Dispatchers.IO) {
                         context.userDetailsDataStore.updateData {
-                            Log.i("karkaminski", "updateData: ${dataToSave.value}")
-                            it.toBuilder().setIdToken(dataToSave.value).build()
+                            Log.i("karkaminski", "setIdToken: ${dataToSave1.value}")
+                            it.toBuilder().setIdToken(dataToSave1.value).build()
+                        }
+                        context.userDetailsDataStore.updateData {
+                            Log.i("karkaminski", "setCookie: ${dataToSave2.value}")
+                            it.toBuilder().setCookie(dataToSave2.value).build()
                         }
                     }
                 }) {
