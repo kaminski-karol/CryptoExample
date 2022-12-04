@@ -12,7 +12,6 @@ class UserDetailsSerializer : Serializer<UserProto> {
 
     override val defaultValue: UserProto = UserProto.getDefaultInstance()
 
-
     override suspend fun readFrom(input: InputStream): UserProto {
         return try {
             UserProto.parseFrom(input)
