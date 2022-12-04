@@ -1,8 +1,12 @@
 package com.example.cryptobiometricsexample.datastore
 
+import android.content.Context
 import androidx.datastore.core.Serializer
+import androidx.datastore.dataStore
 import java.io.InputStream
 import java.io.OutputStream
+
+val Context.userDetailsDataStore by dataStore("user_details.pb", UserDetailsSerializer())
 
 class UserDetailsSerializer : Serializer<UserProto> {
 
