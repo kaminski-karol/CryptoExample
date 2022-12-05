@@ -1,10 +1,8 @@
 package com.example.cryptobiometricsexample
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,17 +19,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import com.example.cryptobiometricsexample.datastore.userDetailsDataStore
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import com.example.cryptobiometricsexample.crypto.CryptoManager
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        var path = this.filesDir
+        var file = File(path, "token.txt")
+        var cryptoManager = CryptoManager()
 
         setContent {
             val context = LocalContext.current
@@ -45,15 +45,6 @@ class MainActivity : ComponentActivity() {
                 val savedText = remember {
                     mutableStateOf("empty")
                 }
-                LaunchedEffect("savedData") {
-                    lifecycleScope.launch {
-                        context.userDetailsDataStore.data.map {
-                            it.idToken
-                        }.onEach {
-                            savedText.value = it
-                        }.launchIn(this)
-                    }
-                }
 
                 val dataToSave1 = remember { mutableStateOf("") }
                 TextField(
@@ -63,13 +54,34 @@ class MainActivity : ComponentActivity() {
                 )
 
                 Button(onClick = {
-                    GlobalScope.launch(Dispatchers.IO) {
-                        context.userDetailsDataStore.updateData {
-                            it.toBuilder().setIdToken(dataToSave1.value).build()
-                        }
+                    var stream = FileOutputStream(file)
+                    try {
+                        cryptoManager.encrypt(
+                            dataToSave1.value.toByteArray(),
+                            stream
+                        )
+                    } finally {
+                        stream.close()
                     }
                 }) {
                     Text(text = "encrypt and save data")
+                }
+
+                Button(onClick = {
+                    val length = file.length().toInt()
+
+                    val fis = FileInputStream(file)
+                    try {
+
+                        var decrypted = cryptoManager.decrypt(fis)
+                        val contents = String(decrypted)
+                        savedText.value = contents
+
+                    } finally {
+                        fis.close()
+                    }
+                }) {
+                    Text(text = "decrypt")
                 }
 
                 Text("Saved data (after decryption):")
