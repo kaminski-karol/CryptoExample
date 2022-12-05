@@ -7,6 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -16,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.example.cryptobiometricsexample.datastore.userDetailsDataStore
 import kotlinx.coroutines.Dispatchers
@@ -32,9 +36,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .padding(30.dp)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
             ) {
                 val savedText = remember {
                     mutableStateOf("empty")
@@ -49,44 +55,25 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Text("Saved data:")
-                Text(text = savedText.value)
-
                 val dataToSave1 = remember { mutableStateOf("") }
                 TextField(
                     value = dataToSave1.value,
-                    onValueChange = { dataToSave1.value = it},
-                    label = { Text(text = "Id token to save")}
-                )
-                val dataToSave2 = remember { mutableStateOf("") }
-                TextField(
-                    value = dataToSave2.value,
-                    onValueChange = { dataToSave2.value = it},
-                    label = { Text(text = "Cookie to save")}
+                    onValueChange = { dataToSave1.value = it },
+                    label = { Text(text = "Data to save") }
                 )
 
                 Button(onClick = {
                     GlobalScope.launch(Dispatchers.IO) {
                         context.userDetailsDataStore.updateData {
-                            Log.i("karkaminski", "setIdToken: ${dataToSave1.value}")
                             it.toBuilder().setIdToken(dataToSave1.value).build()
-                        }
-                        context.userDetailsDataStore.updateData {
-                            Log.i("karkaminski", "setCookie: ${dataToSave2.value}")
-                            it.toBuilder().setCookie(dataToSave2.value).build()
                         }
                     }
                 }) {
-                    Text(text = "Save data")
+                    Text(text = "encrypt and save data")
                 }
 
-                Button(onClick = {}) {
-                    Text(text = "Encrypt")
-                }
-
-                Button(onClick = {}) {
-                    Text(text = "Decrypt")
-                }
+                Text("Saved data (after decryption):")
+                Text(text = savedText.value)
 
             }
         }

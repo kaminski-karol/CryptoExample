@@ -1,4 +1,5 @@
 package com.example.cryptobiometricsexample.crypto
+
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
@@ -50,7 +51,7 @@ class CryptoManager {
     }
 
     fun encrypt(bytes: ByteArray, outputStream: OutputStream): ByteArray {
-        val encryptedBytes = encryptCipher.doFinal(bytes)
+        val encryptedBytes = encryptCipher.doFinal(encryptCipher.iv + bytes)
         outputStream.use {
             it.write(encryptCipher.iv.size)
             it.write(encryptCipher.iv)
@@ -70,7 +71,14 @@ class CryptoManager {
             val encryptedBytes = ByteArray(encryptedBytesSize)
             it.read(encryptedBytes)
 
-            getDecryptCipherForIv(iv).doFinal(encryptedBytes)
+            val decipheredByteArray = getDecryptCipherForIv(iv)
+                .doFinal(encryptedBytes)
+
+            // Strip the Initialization Vector (usually first 16 bytes) to get the actual unencrypted data
+            decipheredByteArray
+                .toList()
+                .subList(ivSize, decipheredByteArray.size) // skip the IV
+                .toByteArray()
         }
     }
 
