@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
 import com.example.cryptobiometricsexample.crypto.CryptoManager
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -16,7 +18,8 @@ class UserDetailsSerializer(
     override val defaultValue: UserProto = UserProto.getDefaultInstance()
 
     override suspend fun readFrom(input: InputStream): UserProto {
-        val decryptedBytes = cryptoManager.decrypt(input)
+        var dataIS = DataInputStream(input)
+        val decryptedBytes = cryptoManager.decrypt(dataIS)
         return try {
             UserProto.parseFrom(decryptedBytes)
         } catch (exception: Exception) {
@@ -25,9 +28,10 @@ class UserDetailsSerializer(
     }
 
     override suspend fun writeTo(t: UserProto, output: OutputStream) {
+        var dataOS = DataOutputStream(output)
         cryptoManager.encrypt(
             t.toByteArray(),
-            output
+            dataOS
             )
     }
 }
